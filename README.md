@@ -22,6 +22,14 @@ What things you need to install the software and how to install them.
 Examples
 ```
 
+## Development
+Backend
+
+```cargo watch -q -c -w src/ -x run```
+
+client
+
+```cargo watch -q -c -w tests/ -x "test -q quick_dev -- --nocapture" ```
 ## Deployment
 
 Add additional notes about how to deploy this on a production system.
