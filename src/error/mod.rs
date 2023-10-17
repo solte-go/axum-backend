@@ -6,7 +6,13 @@ pub type Result<T> = core::result::Result<T, Error>;
 pub enum Error {
     LoginFail,
 
-    TicketDeleteFailNotFound {id: u64},
+    //Auth Error
+
+    AuthFaliNoAuthTokenCookie,
+    AuthFailWrongTokenFormat,
+
+    //Model Error
+    TicketDeleteFailNotFound {id: String},
 }
 
 impl std::fmt::Display for Error {
@@ -21,6 +27,19 @@ impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         println!("->> {:<12} - {self:?}", "INTO_RES");
 
-        (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+        match self {
+            Self::LoginFail => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+            },
+            Self::AuthFaliNoAuthTokenCookie => {
+                (StatusCode::UNAUTHORIZED, "Unauthiruzed").into_response()
+            },
+            Self::AuthFailWrongTokenFormat => {
+                (StatusCode::UNAUTHORIZED, "Unauthiruzed").into_response()
+            },
+            Self::TicketDeleteFailNotFound{id:_} => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+            }        
+        }
     }
 }

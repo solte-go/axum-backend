@@ -44,7 +44,7 @@ pub fn routes(mc: ModelController) -> Router{
 
  async fn delete_ticket(
     State(mc): State<ModelController>,
-    Path(id): Path<u64>,
+    Path(id): Path<String>,
  ) -> Result<Json<Ticket>> {
     println!("->> {:<12} - delete_ticket", "HANDLER");
 

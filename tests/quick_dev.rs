@@ -27,5 +27,6 @@ async fn quick_dev() -> Result<()>{
 
     hc.do_get("/api/tickets").await?.print().await?;
 
+    // hc.do_delete("/api/tickets/491bad20-c3f6-4d40-9b7a-d2e1ff966cab").await?.print().await?;
     Ok(())
 }
