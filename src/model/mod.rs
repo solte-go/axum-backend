@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::{Error, Result};
+use crate::{Error, Result, ctx::Ctx};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::sync::{Arc, Mutex};
@@ -7,6 +7,7 @@ use std::sync::{Arc, Mutex};
 #[derive(Clone, Debug, Serialize)]
 pub struct Ticket {
     pub id: Uuid,
+    pub cid: Uuid,
     pub title: String,
 }
 
@@ -26,13 +27,14 @@ impl ModelController{
         })
     }
 
-    pub async fn create_ticket(&self, ticket_fc: TicketForCreate) -> Result<Ticket> {
+    pub async fn create_ticket(&self, ctx: Ctx, ticket_fc: TicketForCreate) -> Result<Ticket> {
         let mut store = self.tickets_store.lock().unwrap();
 
         let id = Uuid::new_v4();
 
         let ticket = Ticket{
             id,
+            cid: ctx.user_id(),
             title: ticket_fc.title,
         };
         
@@ -41,7 +43,7 @@ impl ModelController{
         Ok(ticket)
     }
 
-    pub async fn list_tickets(&self) -> Result<Vec<Ticket>> {
+    pub async fn list_tickets(&self, _ctx: Ctx) -> Result<Vec<Ticket>> {
         let store = self.tickets_store.lock().unwrap();
 
         let ticktes = store.iter()
@@ -52,7 +54,7 @@ impl ModelController{
         Ok(ticktes)
     }
 
-    pub async fn delete(&self, id: String) -> Result<Ticket> {
+    pub async fn delete(&self, id: String, _ctx: Ctx) -> Result<Ticket> {
         let mut store = self.tickets_store.lock().unwrap();
 
         // let my_uuid = match Uuid::parse_str(id.as_str()){
