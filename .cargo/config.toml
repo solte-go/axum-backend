@@ -1,0 +1,8 @@
+[env]
+
+RUST_LOG="axum_server=debug"
+
+
+## -- ConfigMap
+
+SERVICE_WEB_FOLDER="web-folder/"

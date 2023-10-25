@@ -1,15 +1,18 @@
-use axum::{response::IntoResponse, http::{StatusCode, response}};
-use tower_http::classify::MakeClassifier;
+
+use crate::web;
+use axum::{response::IntoResponse, http::StatusCode};
+use serde::Serialize;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-#[derive(Debug, Clone, strum_macros::AsRefStr)]
+#[derive(Debug, Clone, Serialize ,strum_macros::AsRefStr)]
+#[serde(tag = "type", content = "data")]
 pub enum Error {
     LoginFail,
 
     //Auth Error
 
-    AuthFaliNoAuthTokenCookie,
+    AuthFailNoAuthTokenCookie,
     AuthFailWrongTokenFormat,
     AuthFailCtxNotInRequestExt,
 
@@ -65,7 +68,7 @@ impl Error {
 
             // -- Auth
             Self::AuthFailCtxNotInRequestExt
-            | Self::AuthFaliNoAuthTokenCookie
+            | Self::AuthFailNoAuthTokenCookie
             | Self::AuthFailWrongTokenFormat => {
                 (StatusCode::FORBIDDEN, ClientError::NoAuth)
             }

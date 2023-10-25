@@ -38,7 +38,7 @@ pub async fn mw_ctx_resolver<B>(
     .map(|c| c.value().to_string());
 
     let result_ctx = match auth_token
-        .ok_or(Error::AuthFaliNoAuthTokenCookie)
+        .ok_or(Error::AuthFailNoAuthTokenCookie)
         .and_then(parse_token) 
         {
             Ok((user_id, _exp, _sing)) => {
@@ -47,7 +47,7 @@ pub async fn mw_ctx_resolver<B>(
             Err(e) => Err(e),
         };
 
-    if result_ctx.is_err() && !matches!(result_ctx, Err(Error::AuthFaliNoAuthTokenCookie)) {
+    if result_ctx.is_err() && !matches!(result_ctx, Err(Error::AuthFailNoAuthTokenCookie)) {
         cookies.remove(Cookie::named(AUTH_TOKEN))
     }
 

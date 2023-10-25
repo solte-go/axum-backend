@@ -1,5 +1,9 @@
 use uuid::Uuid;
 
+mod error;
+
+pub use self::error::{Error, Result};
+
 #[derive(Debug, Clone)]
 pub struct Ctx {
     user_id: Uuid,
