@@ -7,6 +7,8 @@ mod logger;
 mod model;
 mod web;
 
+pub mod _dev_utils;
+
 pub use self::error::{Error, Result};
 pub use config::Config;
 
@@ -28,6 +30,9 @@ async fn main() -> Result<()> {
         .with_target(false)
         .with_env_filter(EnvFilter::from_default_env())
         .init();
+
+    // -- FOR DEV ONLY
+    _dev_utils::must_init_dev().await; //must means that fn will panic on error!
 
     let mm = ModelManager::new().await?;
 

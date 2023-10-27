@@ -19,6 +19,9 @@ tower-cookies = "0.9"
 # -- Tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+# -- Data
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "time"]}
+
 # -- Others
 uuid = { version = "1", features = ["v4", "serde", "fast-rng"] }
 strum_macros = "0.25.3"

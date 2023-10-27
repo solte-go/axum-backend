@@ -1,0 +1,31 @@
+version: "3.8"
+name: "axum-server"
+services:
+  postgres:
+    container_name: ax-postgres-dev
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+      # - ./init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "sh -c 'pg_isready -U postgres -d postgres'"
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    networks:
+      - axum-network
+
+volumes:
+  postgres-volume:
+    driver: local
+
+networks:
+  axum-network:
+    driver: bridge
