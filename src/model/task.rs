@@ -1,0 +1,80 @@
+use crate::{ModelManager, ctx::Ctx};
+use crate::model::Result;
+use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
+
+#[derive(Debug, Clone, FromRow, Serialize)]
+pub struct Task{
+    pub id: i64,
+    pub title: String,
+}
+#[derive(Deserialize)]
+pub struct TackForCreate {
+    pub title: String
+}
+
+#[derive(Deserialize)]
+pub struct TackForUpdate {
+    pub title:Option<String>
+}
+
+pub struct TaskModelController;
+
+impl TaskModelController { 
+    pub async fn create(
+        _ctx: &Ctx,
+        mm: &ModelManager,
+        task_c: TackForCreate,
+    ) -> Result<i64> {
+        let db =mm.db(); 
+
+        let (id,) = sqlx::query_as::<_, (i64,)>(
+            "INSERT INTO task (title) VALUES ($1) RETURNING id"
+        )
+        .bind(task_c.title)
+        .fetch_one(db)
+        .await?;
+
+       Ok(id)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(unused)]
+    use crate::_dev_utils;
+
+    use super::*; 
+    use anyhow::Result;
+    use tower::Layer;
+
+    #[tokio::test]
+    async fn test_create_ok() -> Result<()> {
+        let mm = _dev_utils::init_test().await;
+        let ctx = Ctx::root_ctx();
+        let fx_title = "test_create_ok title";
+
+        let task_c = TackForCreate {
+            title: fx_title.to_string(),  
+        };
+        let id = TaskModelController::create(&ctx, &mm, task_c).await?;
+
+        let (title, ): (String,) = sqlx::query_as(
+            "SELECT title FROM task WHERE id = $1")
+                .bind(id)
+                .fetch_one(mm.db())
+                .await?;
+
+        assert_eq!(title, fx_title);
+
+        let count = sqlx::query("DELETE FROM task WHERE id = $1")
+            .bind(id)
+            .execute(mm.db())
+            .await?
+            .rows_affected();
+        assert_eq!(count, 1, "Row should be deleted count should be equal to 0");
+        
+        Ok(())
+    }
+
+}
