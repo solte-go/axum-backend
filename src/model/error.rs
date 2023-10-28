@@ -1,11 +1,23 @@
 use serde::Serialize;
+use serde_with::{serde_as, DisplayFromStr};
+
+use super::store;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
+// TODO learn about "serde_as" "DisplayFromStr"
+#[serde_as]
 #[derive(Debug, Serialize)]
-pub enum Error {}
+pub enum Error {
+	EntryNotFound { entry: &'static str, id: i64},
 
-// region:    --- Error Boilerplate
+	// -- Modules
+	Store(store::Error),
+
+	// -- Externals
+	Sqlx(#[serde_as(as = "DisplayFromStr")]sqlx::Error)
+}
+
 impl core::fmt::Display for Error {
 	fn fmt(
 		&self,
@@ -16,4 +28,16 @@ impl core::fmt::Display for Error {
 }
 
 impl std::error::Error for Error {}
-// endregion: --- Error Boilerplate
+
+
+impl From<store::Error> for Error {
+	fn from(value: store::Error) -> Self {
+		Self::Store(value)
+	}
+}
+
+impl From<sqlx::Error> for Error {
+	fn from(value: sqlx::Error) -> Self {
+		Self::Sqlx(value)
+	}
+}

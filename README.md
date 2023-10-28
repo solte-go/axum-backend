@@ -1,16 +1,12 @@
 # sdl/axum_server
 
-
-
 ## Getting Started
 
 Download links:
 
-SSH clone URL: ssh://git@git.jetbrains.space/soltedev/sdl/axum_server.git
+SSH clone URL: <ssh://git@git.jetbrains.space/soltedev/sdl/axum_server.git>
 
-HTTPS clone URL: https://git.jetbrains.space/soltedev/sdl/axum_server.git
-
-
+HTTPS clone URL: <https://git.jetbrains.space/soltedev/sdl/axum_server.git>
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
@@ -18,18 +14,20 @@ These instructions will get you a copy of the project up and running on your loc
 
 What things you need to install the software and how to install them.
 
-```
+```sh
 Examples
 ```
 
 ## Development
+
 Backend
 
 ```cargo watch -q -c -w src/ -x run```
 
 client
 
-```cargo watch -q -c -w tests/ -x "test -q quick_dev -- --nocapture" ```
+```cargo watch -q -c -w tests/ -x "test -q quick_dev -- --nocapture"```
+
 ## Deployment
 
 Add additional notes about how to deploy this on a production system.
@@ -37,15 +35,6 @@ Add additional notes about how to deploy this on a production system.
 ## Resources
 
 Add links to external resources for this project, such as CI server, bug tracker, etc.
-
-# AwesomeApp rust-web-app
-
-More info at: https://awesomeapp.dev/rust-web-app/
-
-- rust-web-app YouTube episodes:
-	- [Episode 01 - Rust Web App - Course to Production Coding](https://youtube.com/watch?v=3cA_mk4vdWY&list=PL7r-PXl6ZPcCIOFaL7nVHXZvBmHNhrh_Q)
-- Related videos: 
-	- [Rust Axum Full Course](https://youtube.com/watch?v=XZtlD_m59sM&list=PL7r-PXl6ZPcCIOFaL7nVHXZvBmHNhrh_Q)
 
 ## Starting the DB
 

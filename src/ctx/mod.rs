@@ -12,8 +12,16 @@ pub struct Ctx {
 // Constructor.
 
 impl Ctx{
-    pub fn new(user_id: Uuid) -> Self {
-        Self { user_id }
+    pub fn new(user_id: Uuid) -> Result<Self> {
+        if user_id == Uuid::nil(){
+            Err(Error::CtxCannotNewRootCtx)
+        } else {
+           Ok( Self { user_id })
+        }
+    }
+
+    pub fn root_ctx() -> Self {
+        Ctx {user_id: Uuid::nil()}
     }
 }
 
