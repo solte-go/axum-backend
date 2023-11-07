@@ -6,6 +6,10 @@ RUST_LOG="axum_server=debug"
 
 SERVICE_DB_URL="postgres://app_user:dev_only_pwd@localhost/app_db"
 
+SERVICE_PWD_KEY="LndXZFZlGo1KEyflHwhTFG8Tm5Rj18FfP8ZDUIFuWd7_FyIFZ4Q-IyMN-HeQ-3oqhVo6fhcb3HotXFNGmy4GLw"
+SERVICE_TOKEN_KEY="9ON1orDK9cYuH-Yf4Ty6WWGAaYXHygUUA-VJToHpr3JZFbKmnN47HPts4oGwNjCybpmpv7jEqtbfqLbg1pTtGw"
+SERVICE_TOKEN_DURATION_SEC="1800"
+
 ## -- ConfigMap
 
 SERVICE_WEB_FOLDER="web-folder/"

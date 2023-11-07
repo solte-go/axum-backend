@@ -1,8 +1,13 @@
 // region:    --- Modules
 
+
 mod error;
 mod store;
+mod base;
+mod crypt;
 pub mod task;
+pub mod projects;
+pub mod user;
 
 use store::{DB, new_db_pool};
 

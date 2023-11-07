@@ -1,90 +1,67 @@
 use serde::{Deserialize, Serialize};
+use sqlb::Fields;
 use sqlx::FromRow;
 
 use crate::{ctx::Ctx, ModelManager};
-use crate::model::Error;
-use crate::model::Result;
+use crate::model::{Result, Error};
 
-#[derive(Debug, Clone, FromRow, Serialize)]
+use super::base::{self, DBModelController};
+
+#[derive(Debug, Clone, Fields, FromRow, Serialize)]
 pub struct Task {
     pub id: i64,
     pub title: String,
-}
 
-#[derive(Deserialize)]
+    // #[field(skip)] - sqlb - skip field to mapping
+    // #[field(name = "desc")] - sqlb rename filed works with "ToRow"
+    // #[sqlx(rename = "desc")] - sqlx "FromRow" 
+    // pub unwanted_fields: String,
+}
+ 
+#[derive(Fields, Deserialize)]
 pub struct TackForCreate {
     pub title: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Fields, Deserialize)]
 pub struct TackForUpdate {
     pub title: Option<String>,
 }
-
+ 
 pub struct TaskModelController;
+
+impl DBModelController for TaskModelController {
+     const TABLE: &'static str = "task";
+}
+
 
 impl TaskModelController {
     pub async fn create(
-        _ctx: &Ctx,
+        ctx: &Ctx,
         mm: &ModelManager,
         task_c: TackForCreate,
     ) -> Result<i64> {
-        let db = mm.db();
-
-
-        // That kind of signature "(id, )" used because req returinig id
-        let (id, ) = sqlx::query_as::<_, (i64, )>(
-            "INSERT INTO task (title) VALUES ($1) RETURNING id"
-        )
-            .bind(task_c.title)
-            .fetch_one(db)
-            .await?;
-
-        Ok(id)
+       base::create::<Self, _>(ctx, mm, task_c).await
     }
 
-    pub async fn get(
-        _ctx: &Ctx,
-        mm: &ModelManager,
-        id: i64,
-    ) -> Result<Task> {
-        let db = mm.db();
-        let task: Task = sqlx::query_as("SELECT * FROM task WHERE id = $1")
-            .bind(id)
-            .fetch_optional(db)
-            .await?
-            .ok_or(Error::EntryNotFound { entry: "task", id })?;
-
-        Ok(task)
+    pub async fn get(ctx: &Ctx,mm: &ModelManager, id: i64) -> Result<Task> {
+        base::get::<Self, _>(ctx, mm, id).await
     }
 
-    pub async fn list(_ctx: &Ctx,
-        mm: &ModelManager,
-    ) -> Result<Vec<Task>> {
-        let db = mm.db();
+    pub async fn list(ctx: &Ctx,mm: &ModelManager) -> Result<Vec<Task>> {
+        base::list::<Self, _>(ctx, mm).await
+    }
 
-        let tasks: Vec<Task> = sqlx::query_as("SELECT * FROM task ORDER BY id")
-        .fetch_all(db).await?;
-
-      Ok(tasks)
+    pub async fn update(ctx: &Ctx,mm: &ModelManager, id: i64, task_u: TackForUpdate) -> Result<()> {
+        base::update::<Self, _>(ctx, mm, id, task_u).await
     }
 
     pub async fn delete(
-        _ctx: &Ctx,
+        ctx: &Ctx,
         mm: &ModelManager,
         id: i64,
     ) -> Result<()>{
-        let db = mm.db();
-        let count = sqlx::query("DELETE FROM task WHERE id = $1")
-            .bind(id)
-            .execute(db)
-            .await?
-            .rows_affected();
-        if count == 0 {
-            return Err(Error::EntryNotFound { entry: "task", id: id });
-        }
-
-        Ok(())
+        base::delete::<Self>(ctx, mm, id).await
     }
 }
 
@@ -114,6 +91,7 @@ mod tests {
         let id = TaskModelController::create(&ctx, &mm, task_c).await?;
 
         let task = TaskModelController::get(&ctx, &mm, id).await?;
+        println!("{:?}", task.title.to_string());
         assert_eq!(task.title, fx_title);
 
         TaskModelController::delete(&ctx, &mm, id).await?;
@@ -142,6 +120,42 @@ mod tests {
         );
         Ok(())
     }
+
+    #[serial]
+    #[tokio::test]
+    async fn test_update_ok() -> Result<()> {
+        let mm = _dev_utils::init_test().await;
+        let ctx = Ctx::root_ctx();
+        let fx_id:i64 = 1000;
+        let fx_title = "test_ok_01 - task 01";
+        let fx_title_new = "test_ok_01 - task 01 - new";
+
+        let task = _dev_utils::seed_tasks(&ctx, &mm, &[fx_title])
+        .await?
+        .remove(0);
+
+        let task_get = TaskModelController::get(&ctx, &mm, task.id).await?;
+        println!("{:?}", task_get);
+
+        TaskModelController::update(
+            &ctx, 
+            &mm,
+            task.id,
+            TackForUpdate {
+                title: Some(fx_title_new.to_string()),
+            }    
+        ).await?;
+
+        let update_task = TaskModelController::get(
+            &ctx, &mm, task.id).await?;
+
+
+        println!("{:?}", update_task);            
+        assert_eq!(update_task.title, fx_title_new);
+    
+        Ok(())
+    }
+
 
     #[serial]
     #[tokio::test]
@@ -179,8 +193,10 @@ mod tests {
             .into_iter()
             .filter(|t| t.title.starts_with("test_ok"))
             .collect();
+
+            println!("->> {tasks:?}");
         assert_eq!(tasks.len(), 2, "Number of seeded tasks.");
-        println!("->> {tasks:?}");
+    
 
 
         for task in tasks.iter() {

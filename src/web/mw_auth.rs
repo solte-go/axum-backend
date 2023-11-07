@@ -9,7 +9,6 @@ use axum::http::Request;
 use axum::middleware::Next;
 use axum::response::Response;
 use lazy_regex::regex_captures;
-use serde::Serialize;
 use tower_cookies::{Cookie, Cookies};
 use tracing::info;
 use uuid::Uuid;

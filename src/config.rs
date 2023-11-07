@@ -1,5 +1,7 @@
+use sqlx::Column;
+
 use crate::{Error, Result};
-use std::{env, sync::OnceLock};
+use std::{env, sync::OnceLock, str::FromStr};
 
 pub fn config() -> &'static Config {
     static INSTANCE: OnceLock<Config> = OnceLock::new();
@@ -12,16 +14,26 @@ pub fn config() -> &'static Config {
 }
 
 pub struct Config {
+    // Crypt
+    pub pwd_key: Vec<u8>,
+    pub token_key: Vec<u8>,
+    pub token_duration: f64,
+    
     // Web
     pub web_folder: String,
 
-    //database
+    // Database
     pub db_url: String,
 }
+
 
 impl Config {
     fn load_from_env() -> Result<Config>{
         Ok(Config { 
+            pwd_key: get_env_b64_as_u8s("SERVICE_PWD_KEY")?,
+            token_key: get_env_b64_as_u8s("SERVICE_PWD_KEY")?,
+            token_duration:get_env_parse("SERVICE_TOKEN_DURATION_SEC")?,
+
             db_url: get_env("SERVICE_DB_URL")?,
             web_folder: get_env("SERVICE_WEB_FOLDER")?,
         })
@@ -31,4 +43,14 @@ impl Config {
 
 fn get_env(name: &'static str) -> Result<String> {
     env::var(name).map_err(|_| Error::ConfigMissingEnv(name))
+}
+
+fn get_env_b64_as_u8s(name: &'static str) -> Result<Vec<u8>> {
+    base64_url::decode(&get_env(name)?)
+    .map_err(|_| Error::ConfigWrongFormat(name))
+}
+
+fn get_env_parse <T: FromStr>(name: &'static str) -> Result<T>{
+    let value = get_env(name)?;
+    value.parse::<T>().map_err(|_| Error::ConfigWrongFormat(name))
 }

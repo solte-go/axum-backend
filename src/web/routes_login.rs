@@ -9,7 +9,7 @@ use tracing::info;
 #[derive(Debug, Deserialize)]
 struct LoginPaylod{
     username: String,
-    pwd: String,
+    password: String,
 }
 
 pub fn routes() -> Router {
@@ -19,7 +19,7 @@ pub fn routes() -> Router {
 async fn api_login(cookies:Cookies, payload: Json<LoginPaylod>) -> Result<Json<Value>> {
     info!("{:<12} - api_login", "HANDLER");
 
-    if payload.username != "pupu" || payload.pwd != "somecarrots" {
+    if payload.username != "pupu" || payload.password != "somecarrots" {
         return Err(Error::LoginFail);
     }
 

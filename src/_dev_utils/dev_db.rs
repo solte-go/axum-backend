@@ -3,6 +3,8 @@ use std::{time::Duration, fs, path::PathBuf};
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 use tracing::info;
 
+use crate::{model::{ModelManager, user::{User, UserMC}}, ctx::Ctx};
+
 type DB = Pool<Postgres>;
 
 const PG_DEV_POSTGRES_URL: &str = "postgres://postgres:postgres@localhost/postgres";
@@ -42,6 +44,15 @@ pub async fn init_dev_db() -> Result<(), Box<dyn std::error::Error>> {
         }
      
     }
+
+    let mm = ModelManager::new().await?;
+    let ctx = Ctx::root_ctx();
+
+    let dev_user: User = UserMC::first_by_username(&ctx, &mm, "Pupu-The-Tester")
+        .await?.unwrap();
+
+    UserMC::update_pwd(&ctx, &mm, dev_user.id, "welcome").await?;
+    info!("{:<12} - init_dev_db - set dev user pwd", "DEV-OPERATION");
 
     Ok(())
 }

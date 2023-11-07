@@ -1,3 +1,5 @@
+use std::io;
+
 use crate::model;
 
 pub type Result<T> = core::result::Result<T, Error>;
@@ -6,8 +8,11 @@ pub type Result<T> = core::result::Result<T, Error>;
 pub enum Error {
     // -- Config
     ConfigMissingEnv(&'static str),
+    ConfigWrongFormat(&'static str),
 	// -- Modules
 	Model(model::Error),
+	//
+	Generic(String)
 }
 
 // region:    --- Froms
@@ -17,6 +22,12 @@ impl From<model::Error> for Error {
 	}
 }
 // endregion: --- Froms
+
+impl From<io::Error>  for Error {
+	fn from(val: io::Error) -> Self {
+		Self::Generic(val.to_string())
+	}
+}
 
 // region:    --- Error Boilerplate
 impl core::fmt::Display for Error {

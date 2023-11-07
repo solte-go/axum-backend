@@ -21,7 +21,7 @@ mod tests {
     use std::fs::read_dir;
     use serial_test::serial;
 
-    use crate::error::{Error, Result};
+    use crate::error::Result;
 
     #[serial]
     #[test]
