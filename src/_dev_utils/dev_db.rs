@@ -7,6 +7,7 @@ use crate::{model::{ModelManager, user::{User, UserMC}}, ctx::Ctx};
 
 type DB = Pool<Postgres>;
 
+const DEV_USER_PASSWORD: &str = "welcome";
 const PG_DEV_POSTGRES_URL: &str = "postgres://postgres:postgres@localhost/postgres";
 const PG_DEV_APP_URL: &str = "postgres://app_user:dev_only_pwd@localhost/app_db"; 
 
@@ -51,8 +52,8 @@ pub async fn init_dev_db() -> Result<(), Box<dyn std::error::Error>> {
     let dev_user: User = UserMC::first_by_username(&ctx, &mm, "Pupu-The-Tester")
         .await?.unwrap();
 
-    UserMC::update_pwd(&ctx, &mm, dev_user.id, "welcome").await?;
-    info!("{:<12} - init_dev_db - set dev user pwd", "DEV-OPERATION");
+    UserMC::update_pwd(&ctx, &mm, dev_user.id, DEV_USER_PASSWORD).await?;
+    info!("{:<12} - init_dev_db - set dev user password", "DEV-OPERATION");
 
     Ok(())
 }

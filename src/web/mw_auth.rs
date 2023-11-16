@@ -9,6 +9,7 @@ use axum::http::Request;
 use axum::middleware::Next;
 use axum::response::Response;
 use lazy_regex::regex_captures;
+use serde::Serialize;
 use tower_cookies::{Cookie, Cookies};
 use tracing::info;
 use uuid::Uuid;
@@ -66,11 +67,23 @@ impl <S: Send + Sync>FromRequestParts<S> for Ctx {
       
       parts
         .extensions
-            .get::<Result<Ctx>>()
-            .ok_or(Error::AuthFailCtxNotInRequestExt)?
-            .clone()
+        .get::<CtxExtResult>()
+        .ok_or(Error::CtxExt(CtxExtError::CtxNotInRequestExt))?
+        .clone()
+        .map_err(Error::CtxExt)
     }
 }
+
+
+type CtxExtResult = core::result::Result<Ctx, CtxExtError>;
+
+#[derive(Clone, Serialize, Debug)]
+pub enum CtxExtError {
+	TokenNotInCookie,
+	CtxNotInRequestExt,
+	CtxCreateFail(String),
+}
+
 
 fn parse_token(token: String) -> Result<(Uuid, String, String)> {
     let (_whole, user_id, exp, sign) = regex_captures!(

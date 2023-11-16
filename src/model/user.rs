@@ -1,6 +1,6 @@
 use crate::ctx::Ctx;
 use crate::model::base::{self, DBModelController};
-use crate::model::crypt::EncryptContent;
+use crate::crypt::EncryptContent;
 use crate::model::{ModelManager, crypt};
 use crate::model::{Result, Error};
 use serde::{Deserialize, Serialize};

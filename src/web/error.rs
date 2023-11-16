@@ -1,14 +1,16 @@
-
 use crate::web;
+use crate::model;
 use axum::{response::IntoResponse, http::StatusCode};
 use serde::Serialize;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-#[derive(Debug, Clone, Serialize ,strum_macros::AsRefStr)]
+#[derive(Debug, Serialize ,strum_macros::AsRefStr)]
 #[serde(tag = "type", content = "data")]
 pub enum Error {
-    LoginFail,
+    LoginFailUserNameNotFound,
+    LoginFailUserHasNoPassword {user_id: i64},
+    LoginFailPasswordNotMatchng {user_id: i64},
 
     //Auth Error
 
@@ -16,8 +18,18 @@ pub enum Error {
     AuthFailWrongTokenFormat,
     AuthFailCtxNotInRequestExt,
 
+    //Ctx
+    CtxExt(web::mw_auth::CtxExtError),
+
     //Model Error
+    Model(model::Error),
     TicketDeleteFailNotFound {id: String},
+}
+
+impl From<model::Error> for Error {
+    fn from(value: model::Error) -> Self {
+        Self::Model(value)
+    }
 }
 
 impl std::fmt::Display for Error {
@@ -26,7 +38,7 @@ impl std::fmt::Display for Error {
     }
 }
 
-// impl std::error::Error for Error {}
+impl std::error::Error for Error {}
 
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
@@ -62,7 +74,9 @@ impl Error {
     pub fn client_status_and_error(&self) -> (StatusCode, ClientError){
         match self {
             // -- LoginFail
-            Self::LoginFail => {
+            Self::LoginFailUserNameNotFound |
+            Self::LoginFailUserHasNoPassword { .. } |
+            Self::LoginFailPasswordNotMatchng {..} => {
                 (StatusCode::FORBIDDEN, ClientError::LoginFail)
             }
 

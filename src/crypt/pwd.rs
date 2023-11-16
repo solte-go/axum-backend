@@ -10,7 +10,7 @@ pub fn encrypt_pwd(enc_content: &EncryptContent) -> Result<String>{
     Ok(format!("#01#{enpcypted}"))
 }
 
-fn validate_pwd(enc_content: &EncryptContent, pwd_ref: &str) -> Result<()>{
+pub fn validate_pwd(enc_content: &EncryptContent, pwd_ref: &str) -> Result<()>{
     let key = encrypt_pwd(enc_content)?;
 
     if key == pwd_ref{

@@ -4,10 +4,10 @@
 mod error;
 mod store;
 mod base;
-mod crypt;
 pub mod task;
 pub mod projects;
 pub mod user;
+use crate::crypt;
 
 use store::{DB, new_db_pool};
 
