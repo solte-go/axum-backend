@@ -1,5 +1,3 @@
-use sqlx::Column;
-
 use crate::{Error, Result};
 use std::{env, sync::OnceLock, str::FromStr};
 
@@ -17,7 +15,7 @@ pub struct Config {
     // Crypt
     pub pwd_key: Vec<u8>,
     pub token_key: Vec<u8>,
-    pub token_duration: f64,
+    pub token_duration_sec: f64,
     
     // Web
     pub web_folder: String,
@@ -32,7 +30,7 @@ impl Config {
         Ok(Config { 
             pwd_key: get_env_b64_as_u8s("SERVICE_PWD_KEY")?,
             token_key: get_env_b64_as_u8s("SERVICE_PWD_KEY")?,
-            token_duration:get_env_parse("SERVICE_TOKEN_DURATION_SEC")?,
+            token_duration_sec:get_env_parse("SERVICE_TOKEN_DURATION_SEC")?,
 
             db_url: get_env("SERVICE_DB_URL")?,
             web_folder: get_env("SERVICE_WEB_FOLDER")?,

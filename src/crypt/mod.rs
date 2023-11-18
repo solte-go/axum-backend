@@ -1,5 +1,6 @@
 mod error;
 pub mod pwd;
+pub mod token;
 
 pub  use self::error::{Error, Result};
 
@@ -8,18 +9,18 @@ use sha2::Sha512;
 
 pub struct EncryptContent {
     pub content: String,
-    pub sait: String,
+    pub salt: String,
 }
 
 pub fn encrypt_into_b64u(key: &[u8], encoded_content: &EncryptContent)
     -> Result<String> {
-        let EncryptContent {content, sait } = encoded_content;
+        let EncryptContent {content, salt } = encoded_content;
 
         let mut hmac_sha512 = 
             Hmac::<Sha512>::new_from_slice(key).map_err(|_| Error::KeyFailHmac)?;
         
         hmac_sha512.update(content.as_bytes());
-        hmac_sha512.update(sait.as_bytes());
+        hmac_sha512.update(salt.as_bytes());
 
         let hmac_result = hmac_sha512.finalize();
         let result_bytes = hmac_result.into_bytes();
@@ -41,7 +42,7 @@ mod tests {
         
         let fx_encoded_content = EncryptContent {
             content: "The Pupu".to_string(),
-            sait: "transverse carrots".to_string(),
+            salt: "transverse carrots".to_string(),
         };
 
         let fx_res = encrypt_into_b64u(&fx_key, &fx_encoded_content)?;

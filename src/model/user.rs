@@ -99,7 +99,7 @@ impl UserMC {
 
         let pwd = crypt::pwd::encrypt_pwd(&EncryptContent {
             content: password_in_clear.to_string(),
-            sait: user.password_salt.to_string(),
+            salt: user.password_salt.to_string(),
         })?;
 
         sqlb::update().table(Self::TABLE)

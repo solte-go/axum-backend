@@ -12,10 +12,12 @@ pub mod _dev_utils;
 mod utils;
 
 pub use self::error::{Error, Result};
+use axum::response::Html;
+use axum::routing::get;
 pub use config::Config;
 
 use crate::model::ModelManager;
-use crate::web::mw_auth::mw_ctx_resolver;
+use crate::web::mw_auth::{mw_ctx_resolver, mw_require_auth};
 use crate::web::mw_res_map::mw_reponse_map;
 use crate::web::{routes_login, routes_static};
 use axum::{middleware, Router};
@@ -42,8 +44,13 @@ async fn main() -> Result<()> {
 	// let routes_rpc = rpc::routes(mm.clone())
 	//   .route_layer(middleware::from_fn(mw_ctx_require));
 
+    let routes_hello = Router::new()
+        .route("/hello", get(|| async { Html("Moi Tota") }))
+        .route_layer(middleware::from_fn(mw_require_auth));
+
     let routes_all = Router::new()
 		.merge(routes_login::routes(mm.clone()))
+        .merge(routes_hello)
 		// .nest("/api", routes_rpc)
 		.layer(middleware::map_response(mw_reponse_map))
 		.layer(middleware::from_fn_with_state(mm.clone(), mw_ctx_resolver))

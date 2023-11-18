@@ -16,7 +16,7 @@ struct RequestLogger {
     timestamp: String,
 
     // User and Ctx attribites
-    user_id: Option<Uuid>,
+    user_id: Option<i64>,
     // Request attribites
     req_path: String,
     req_method: String, 

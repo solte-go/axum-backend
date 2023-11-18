@@ -1,3 +1,4 @@
+use crate::crypt;
 use crate::web;
 use crate::model;
 use axum::{response::IntoResponse, http::StatusCode};
@@ -24,11 +25,20 @@ pub enum Error {
     //Model Error
     Model(model::Error),
     TicketDeleteFailNotFound {id: String},
+
+    //Crypto
+    Crypt(crypt::Error),
 }
 
 impl From<model::Error> for Error {
     fn from(value: model::Error) -> Self {
         Self::Model(value)
+    }
+}
+
+impl From<crypt::Error> for Error {
+    fn from(value: crypt::Error) -> Self {
+        Self::Crypt(value)
     }
 }
 
@@ -76,17 +86,13 @@ impl Error {
             // -- LoginFail
             Self::LoginFailUserNameNotFound |
             Self::LoginFailUserHasNoPassword { .. } |
-            Self::LoginFailPasswordNotMatchng {..} => {
+            Self::LoginFailPasswordNotMatchng { .. } => {
                 (StatusCode::FORBIDDEN, ClientError::LoginFail)
             }
 
             // -- Auth
-            Self::AuthFailCtxNotInRequestExt
-            | Self::AuthFailNoAuthTokenCookie
-            | Self::AuthFailWrongTokenFormat => {
-                (StatusCode::FORBIDDEN, ClientError::NoAuth)
-            }
-
+            Self::CtxExt(_)=> (StatusCode::FORBIDDEN,ClientError::NoAuth),
+        
             // -- Model
             Self::TicketDeleteFailNotFound { .. } => {
                 (StatusCode::BAD_REQUEST, ClientError::InvalidParams)
