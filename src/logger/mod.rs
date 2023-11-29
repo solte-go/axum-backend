@@ -1,4 +1,5 @@
 use crate::ctx::Ctx;
+use crate::web::rpc::RpcInfo;
 use crate::web::{self, ClientError};
 use axum::http::{Method, Uri};
 use serde::Serialize;
@@ -17,11 +18,16 @@ struct RequestLogger {
 
     // User and Ctx attribites
     user_id: Option<i64>,
+
     // Request attribites
     req_path: String,
     req_method: String, 
 
-    // Errors attribites
+    // Rpc Request Info
+    rpc_id: Option<String>,
+    rpc_method: Option<String>,
+
+    // Errors attribites    
     client_error_type: Option<String>,
     error_type: Option<String>,
     error_data: Option<Value>
@@ -31,6 +37,7 @@ pub async fn log_request(
     req_id: Uuid,
     req_method: Method,
     uri: Uri,
+    rpc_info: Option<&RpcInfo>,
     ctx: Option<Ctx>,
     service_error: Option<&web::Error>,
     client_error: Option<ClientError>
@@ -51,6 +58,9 @@ pub async fn log_request(
 
         req_path: uri.to_string(),
         req_method: req_method.to_string(),
+
+        rpc_id: rpc_info.and_then(|rpc| rpc.id.as_ref().map(|id|id.to_string())),
+        rpc_method: rpc_info.map(|m| m.method.to_string()),
 
         user_id: ctx.map(|c| c.user_id()),
 

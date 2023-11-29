@@ -2,10 +2,12 @@ use serde::{Deserialize, Serialize};
 use sqlb::Fields;
 use sqlx::FromRow;
 
+use crate::ctx;
 use crate::{ctx::Ctx, ModelManager};
-use crate::model::{Result, Error};
+use crate::model::Result;
 
 use super::base::{self, DBModelController};
+use super::projects::Project;
 
 #[derive(Debug, Clone, Fields, FromRow, Serialize)]
 pub struct Task {
@@ -19,12 +21,12 @@ pub struct Task {
 }
  
 #[derive(Fields, Deserialize)]
-pub struct TackForCreate {
+pub struct TaskForCreate {
     pub title: String,
 }
 
 #[derive(Fields, Deserialize)]
-pub struct TackForUpdate {
+pub struct TaskForUpdate {
     pub title: Option<String>,
 }
  
@@ -39,7 +41,7 @@ impl TaskModelController {
     pub async fn create(
         ctx: &Ctx,
         mm: &ModelManager,
-        task_c: TackForCreate,
+        task_c: TaskForCreate,
     ) -> Result<i64> {
        base::create::<Self, _>(ctx, mm, task_c).await
     }
@@ -52,7 +54,7 @@ impl TaskModelController {
         base::list::<Self, _>(ctx, mm).await
     }
 
-    pub async fn update(ctx: &Ctx,mm: &ModelManager, id: i64, task_u: TackForUpdate) -> Result<()> {
+    pub async fn update(ctx: &Ctx,mm: &ModelManager, id: i64, task_u: TaskForUpdate) -> Result<()> {
         base::update::<Self, _>(ctx, mm, id, task_u).await
     }
 
@@ -73,7 +75,7 @@ mod tests {
     use serial_test::serial;
     use tower::Layer;
 
-    use crate::_dev_utils;
+    use crate::{_dev_utils, model};
 
     use super::*;
 
@@ -84,7 +86,7 @@ mod tests {
         let ctx = Ctx::root_ctx();
         let fx_title = "test_create_ok title";
 
-        let task_c = TackForCreate {
+        let task_c = TaskForCreate {
             title: fx_title.to_string(),
         };
 
@@ -111,7 +113,7 @@ mod tests {
         assert!(
             matches!(
                 res,
-                Err(Error::EntryNotFound {
+                Err(model::Error::EntryNotFound {
                     entry: "task",
                     id: 100,
                 })
@@ -141,7 +143,7 @@ mod tests {
             &ctx, 
             &mm,
             task.id,
-            TackForUpdate {
+            TaskForUpdate {
                 title: Some(fx_title_new.to_string()),
             }    
         ).await?;
@@ -168,7 +170,7 @@ mod tests {
         assert!(
             matches!(
                 res,
-                Err(Error::EntryNotFound {
+                Err(model::Error::EntryNotFound {
                     entry: "task",
                     id: 100,
                 })

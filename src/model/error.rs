@@ -10,6 +10,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[derive(Debug, Serialize)]
 pub enum Error {
 	EntryNotFound { entry: &'static str, id: i64},
+	TransactionError(String),
 
 	// -- Modules
 	Store(store::Error),

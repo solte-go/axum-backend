@@ -2,8 +2,10 @@ use crate::ctx::Ctx;
 use crate::model::ModelManager;
 use crate::model::{Error, Result}; 
 use sqlb::HasFields;
-use sqlx::FromRow;
+use sqlx::{FromRow, Row, Transaction, Postgres};
 use sqlx::postgres::PgRow;
+
+use super::projects::{Project, GetProject};
 
 pub trait DBModelController {
     const TABLE: &'static str;
@@ -45,6 +47,56 @@ where
         .ok_or(Error::EntryNotFound { entry: MC::TABLE, id })?;
     Ok(entity)
 }
+
+pub async fn get_project_by_id<MC>(_ctx: &Ctx, tx: &mut Transaction<'_, Postgres>, id: i64) -> Result<Project>
+where  
+    MC: DBModelController,
+{
+    let sql = format!("SELECT * FROM {} WHERE id = $1", MC::TABLE);
+    
+    let project: GetProject = sqlx::query_as(&sql)
+    .bind(id)
+    .fetch_one(&mut **tx)
+    .await.map_err(|_| {
+        Error::EntryNotFound { entry: MC::TABLE, id }
+    })?;
+
+
+    let select_query = sqlx::query(
+        "SELECT name FROM tags WHERE project_id = $1");
+
+        let rows = select_query.bind(project.id).fetch_all(&mut **tx).await?;
+		
+        let tags: Vec<String> = rows.iter().map(|r|r.get::<String, _>("name").to_string()).collect::<Vec<String>>();
+
+
+        // let tags: Vec<String> = select_query.bind(project.id).map(|row| row.get::<String, _>("tag_name"))..fetch_all(&mut *tx).await?;
+
+        //.map(|r| format!("{} - {}", r.get::<i64, _>("id"), r.get::<String, _>("name")))
+		// .collect::<Vec<String>>()
+        // let select_query = sqlx::query("SELECT id, name FROM ticket");
+        // let tickets: Vec<Ticket> = select_query
+        //     .map(|row: PgRow| Ticket {
+        //         id: row.get("id"),
+        //         name: row.get("name"),
+        //     })
+        //     .fetch_all(&pool)
+        //     .await?;
+
+    // let tags: Vec<String> = sqlx::query_as("Select tag_name FROM project_tags where project_id='$1'")
+    //     .bind(project.id).fetch_all(&mut *tx)
+    //     .await?;
+
+    // if tx.commit().await.is_err() {
+    //     return Err(Error::EntryNotFound { entry: MC::TABLE, id })
+    // }
+
+    let p:Project = Project { id: project.id, title: project.title, content: project.content, stack: tags };
+
+    Ok(p)
+}
+
+
 
 pub async fn list<MC, E>(_ctx: &Ctx, mm: &ModelManager ) -> Result<Vec<E>>
 where  

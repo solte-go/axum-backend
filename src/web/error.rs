@@ -9,6 +9,12 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[derive(Debug, Serialize ,strum_macros::AsRefStr)]
 #[serde(tag = "type", content = "data")]
 pub enum Error {
+    // -- RPC 
+    RpcMethodUnknown(String),
+    RpcMissingParams { rpc_method: String },
+    RpcFailJsonParams { rpc_method: String },
+
+    // -- Login
     LoginFailUserNameNotFound,
     LoginFailUserHasNoPassword {user_id: i64},
     LoginFailPasswordNotMatchng {user_id: i64},
@@ -28,6 +34,9 @@ pub enum Error {
 
     //Crypto
     Crypt(crypt::Error),
+
+    // -- Exturnal Modules
+    SerdeJson(String),
 }
 
 impl From<model::Error> for Error {
@@ -39,6 +48,12 @@ impl From<model::Error> for Error {
 impl From<crypt::Error> for Error {
     fn from(value: crypt::Error) -> Self {
         Self::Crypt(value)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(value: serde_json::Error) -> Self {
+        Self::SerdeJson(value.to_string())
     }
 }
 
@@ -90,10 +105,16 @@ impl Error {
                 (StatusCode::FORBIDDEN, ClientError::LoginFail)
             }
 
+
+
             // -- Auth
             Self::CtxExt(_)=> (StatusCode::FORBIDDEN,ClientError::NoAuth),
         
             // -- Model
+            &Self::Model(model::Error::EntryNotFound { entry, id } ) => {
+                (StatusCode::BAD_REQUEST, ClientError::DataNotFound { entity: entry, id })
+            }
+
             Self::TicketDeleteFailNotFound { .. } => {
                 (StatusCode::BAD_REQUEST, ClientError::InvalidParams)
             }
@@ -108,10 +129,12 @@ impl Error {
 }
 
 
-#[derive(Debug, strum_macros::AsRefStr)]
+#[derive(Debug, Serialize, strum_macros::AsRefStr)]
+#[serde(tag = "message", content = "detail")]
 pub enum ClientError {
     LoginFail,
-    NoAuth,
+    NoAuth, 
     InvalidParams,
     ServiceError,
+    DataNotFound { entity: &'static str, id: i64},
 }

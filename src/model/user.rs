@@ -2,7 +2,7 @@ use crate::ctx::Ctx;
 use crate::model::base::{self, DBModelController};
 use crate::crypt::EncryptContent;
 use crate::model::{ModelManager, crypt};
-use crate::model::{Result, Error};
+use crate::model::Result;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use sqlb::{Fields, HasFields};
@@ -69,7 +69,7 @@ impl UserMC {
 
 
     pub async fn first_by_username<E>(
-        ctx: &Ctx,
+        _ctx: &Ctx,
         mm: &ModelManager,
         username: &str,
     ) -> Result<Option<E>>
@@ -110,7 +110,6 @@ impl UserMC {
 
         Ok(())
     }
-
 }
 
 #[cfg(test)]

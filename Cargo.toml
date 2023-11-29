@@ -19,6 +19,7 @@ tower-cookies = "0.9"
 # -- Tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+axum-prometheus = "0.4.0"
 # -- Data
 sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "time"]}
 sqlb = "0.4"

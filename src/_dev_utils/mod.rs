@@ -4,7 +4,7 @@ mod dev_db;
 use tokio::sync::OnceCell;
 use tracing::info;
 
-use crate::{model::{ModelManager, self, task::{Task, TaskModelController, TackForCreate}}, ctx::Ctx};
+use crate::{model::{ModelManager, self, task::{Task, TaskModelController, TaskForCreate}}, ctx::Ctx};
 
 pub async fn must_init_dev() {
     static INIT: OnceCell<()> = OnceCell::const_new();
@@ -40,7 +40,7 @@ pub async fn seed_tasks(
         let id = TaskModelController::create(
             ctx, 
             mm, 
-            TackForCreate{
+            TaskForCreate{
                 title: title.to_string(),
             },
         )

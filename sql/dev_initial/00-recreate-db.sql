@@ -8,3 +8,6 @@ DROP USER IF EXISTS app_user;
 
 CREATE USER app_user PASSWORD 'dev_only_pwd';
 CREATE DATABASE app_db owner app_user ENCODING = 'UTF-8';
+
+-- CREATE USER sa_user PASSWORD 'dev_only_pwd';
+-- CREATE DATABASE post_backend_db owner sa_user ENCODING = 'UTF-8';

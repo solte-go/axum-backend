@@ -44,6 +44,13 @@ EOF
 # (e.g., debian@sha256:ac707220fbd7b67fc19b112cee8170b41a9e97f703f588b2cdbbcdcecdd8af57).
 FROM debian:bullseye-slim AS final
 
+ENV RUST_LOG="axum_server=debug"
+ENV SERVICE_DB_URL="postgres://app_user:dev_only_pwd@postgres/app_db"
+ENV SERVICE_PWD_KEY="LndXZFZlGo1KEyflHwhTFG8Tm5Rj18FfP8ZDUIFuWd7_FyIFZ4Q-IyMN-HeQ-3oqhVo6fhcb3HotXFNGmy4GLw"
+ENV SERVICE_TOKEN_KEY="9ON1orDK9cYuH-Yf4Ty6WWGAaYXHygUUA-VJToHpr3JZFbKmnN47HPts4oGwNjCybpmpv7jEqtbfqLbg1pTtGw"
+ENV SERVICE_TOKEN_DURATION_SEC="1800"
+ENV SERVICE_WEB_FOLDER="web-folder/"
+
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 ARG UID=10001

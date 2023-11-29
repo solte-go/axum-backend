@@ -1,6 +1,18 @@
 version: "3.8"
 name: "axum-server"
 services:
+  web:
+    image: nginx
+    ports:
+      - "80:80"
+    links:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: httpd.access
+
   postgres:
     container_name: ax-postgres-dev
     environment:
@@ -19,24 +31,78 @@ services:
       interval: 20s
       timeout: 5s
       retries: 5
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: postgres.database
     networks:
       - axum-network
 
-  minio:
-    container_name: ax_minio_s3
-    command: server /data --console-address ":9001"
-    environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=supersecret
-    image: quay.io/minio/minio:latest
+  backend:
+    image: axum-test
     ports:
-      - '9000:9000'
-      - '9001:9001'
-    volumes:
-      - minio-volume:/data
-    restart: unless-stopped
+      - "8050:8050"
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: axum.rust.backend
+
     networks:
       - axum-network
+
+  fluentd:
+    build: ./fluentd
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+    links:
+      - "elasticsearch"
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - axum-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    # image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    container_name: elasticsearch
+    expose:
+      - 9200
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    networks:
+      - axum-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.1
+    # image: docker.elastic.co/kibana/kibana:7.13.1
+    links:
+      - "elasticsearch"
+    ports:
+      - "5601:5601"
+    networks:
+      - axum-network
+
+  # minio:
+  #   container_name: ax_minio_s3
+  #   command: server /data --console-address ":9001"
+  #   environment:
+  #     - MINIO_ROOT_USER=admin
+  #     - MINIO_ROOT_PASSWORD=supersecret
+  #   image: quay.io/minio/minio:latest
+  #   ports:
+  #     - '9000:9000'
+  #     - '9001:9001'
+  #   volumes:
+  #     - minio-volume:/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - axum-network
 
 volumes:
   postgres-volume:

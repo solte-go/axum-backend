@@ -2,6 +2,7 @@
 
 use anyhow::Result;
 use serde_json::json;
+use uuid::Uuid;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -17,7 +18,6 @@ async fn main() -> Result<()> {
             "password": "welcome"
 		}),
 	);
-	req_login.await?.print().await?;
 
 	let req_logout = hc.do_post(
 		"/api/logout",
@@ -26,9 +26,67 @@ async fn main() -> Result<()> {
 		}),
 	);
 
-	req_logout.await?.print().await?;
+	let req_list_tasks = hc.do_post(
+		"/api/rpc",
+		json!({
+			"id": Uuid::new_v4(),
+			"method": "list_tasks"
+		}),
+	);
 
-	hc.do_get("/hello").await?.print().await?;
+	let req_create_task = hc.do_post(
+		"/api/rpc",
+		json!({
+			"id": Uuid::new_v4(),
+			"method": "create_task",
+			"params": {
+				"data": {
+					"title": "Pupu task one"
+				}
+			}
+		}),
+	);
+
+	let req_update_task = hc.do_post(
+		"/api/rpc",
+		json!({
+			"id": Uuid::new_v4(),
+			"method": "update_task",
+			"params": {
+				"id": 1000,
+				"data": {
+					"title": "Updated - Pupu task one"
+				}
+			}
+		}),
+	);
+
+	let req_delete_task = hc.do_post(
+		"/api/rpc",
+		json!({
+			"id": Uuid::new_v4(),
+			"method": "delete_task",
+			"params": {
+				"id": 1005,
+			}
+		}),
+	);
+
+
+
+	// -- Request Chain
+
+	req_login.await?.print().await?;
+
+	req_create_task.await?.print().await?;
+
+	req_update_task.await?.print().await?;
+
+	req_list_tasks.await?.print().await?;
+
+	req_delete_task.await?.print().await?;
+
+	req_logout.await?.print().await?;
 
 	Ok(())
 }
